@@ -10,10 +10,40 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_05_25_020019) do
+ActiveRecord::Schema.define(version: 2021_05_25_085032) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "assets", force: :cascade do |t|
+    t.string "ticker"
+    t.string "name"
+    t.string "price"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "diaries", force: :cascade do |t|
+    t.string "title"
+    t.string "contents"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.boolean "is_deleted", default: false
+    t.index ["user_id"], name: "index_diaries_on_user_id"
+  end
+
+  create_table "invested_assets", force: :cascade do |t|
+    t.string "amount"
+    t.string "string"
+    t.string "buy_price"
+    t.bigint "diary_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["diary_id"], name: "index_invested_assets_on_diary_id"
+    t.index ["user_id"], name: "index_invested_assets_on_user_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "email"
@@ -22,4 +52,7 @@ ActiveRecord::Schema.define(version: 2021_05_25_020019) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  add_foreign_key "diaries", "users"
+  add_foreign_key "invested_assets", "diaries"
+  add_foreign_key "invested_assets", "users"
 end

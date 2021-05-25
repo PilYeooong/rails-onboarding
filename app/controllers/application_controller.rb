@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::API
+  rescue_from ActiveRecord::RecordNotFound, with: :not_found
 
   def encode_token(user_id)
     exp = Time.now.to_i + 3600
@@ -38,5 +39,13 @@ class ApplicationController < ActionController::API
     @message = 'Please Log in'
     render json: { message: @message }, status: :unauthorized unless logged_in?
   end
+
+  private
+    def bad_request(e)
+      render json: { errors: { message: e } }, status: :bad_request
+    end
+    def not_found(e)
+       render json: { errors: { message: e } }, status: :not_found
+    end
 
 end

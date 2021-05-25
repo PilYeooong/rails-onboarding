@@ -1,0 +1,2 @@
+class InvestedAssetsController < ApplicationController
+end
