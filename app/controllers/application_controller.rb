@@ -1,5 +1,11 @@
 class ApplicationController < ActionController::API
-  rescue_from ActiveRecord::RecordNotFound, with: :not_found
+  rescue_from Errors::BadRequest, with: :handle_error
+  rescue_from Errors::UnAuthorized, with: :handle_error
+  rescue_from Errors::Forbidden, with: :handle_error
+  rescue_from Errors::NotFound, with: :handle_error
+  rescue_from Errors::Conflict, with: :handle_error
+  rescue_from Errors::InvalidToken, with: :handle_error
+  rescue_from Errors::TokenExpired, with: :handle_error
 
   def encode_token(user_id)
     exp = Time.now.to_i + 3600
@@ -17,9 +23,9 @@ class ApplicationController < ActionController::API
       begin
         JWT.decode(token, 'secret', true, algorithm: 'HS256')
       rescue JWT::DecodeError
-        @message = 'InvalidToken'
+        raise Errors::InvalidToken
       rescue JWT::ExpiredSignature
-        @message = 'TokenExpired'
+        raise Errors::TokenExpired
       end
     end
   end
@@ -36,16 +42,12 @@ class ApplicationController < ActionController::API
   end
 
   def authorized
-    @message = 'Please Log in'
-    render json: { message: @message }, status: :unauthorized unless logged_in?
+    raise Errors::UnAuthorized unless logged_in?
   end
 
   private
-    def bad_request(e)
-      render json: { errors: { message: e } }, status: :bad_request
-    end
-    def not_found(e)
-       render json: { errors: { message: e } }, status: :not_found
+    def handle_error(e)
+      render json: { errors: e.message }, status: e.status_code
     end
 
 end
